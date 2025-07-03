@@ -85,16 +85,19 @@
           <div class="gallery-item">
             <a href="office-case-1.html">
               <img src="images/gallery-4.jpeg" alt="사무시설 시공사례" />
+              <div class="gallery-overlay">사무시설 시공사례</div>
             </a>
           </div>
           <div class="gallery-item">
             <a href="commercial-case-1.html">
               <img src="images/gallery-2.jpeg" alt="상업시설 시공사례" />
+              <div class="gallery-overlay">상업시설 시공사례</div>
             </a>
           </div>
           <div class="gallery-item">
             <a href="home-case-1.html">
               <img src="images/gallery-3.jpeg" alt="가정용 시공사례" />
+              <div class="gallery-overlay">가정용 시공사례</div>
             </a>
           </div>
         </div>
@@ -106,7 +109,20 @@
           <span class="contact-phone-label">전화하기</span>
           <span class="contact-phone-number">010-2855-1154</span>
         </a>
-
+        <a
+          href="https://qr.kakao.com/talk/c0DOv4D8Taj6LnxBncEEmNeX5qU-"
+          target="_blank"
+          class="contact-call-btn"
+          id="kakao-link-btn"
+        >
+          <span class="contact-call-icon"
+            ><img
+              src="images/kakao-talk-icon.png"
+              alt="카카오톡 문의"
+              class="naver-talktalk-icon"
+          /></span>
+          <span class="contact-call-text">카카오톡 문의</span>
+        </a>
         <a
           href="https://talk.naver.com/ct/wc97rc?frm=pmd#nafullscreen"
           target="_blank"
@@ -130,5 +146,22 @@
       <p>카카오톡 아이디 : hand181818</p>
       <p>&copy; 2025 조은공조시스템. All Rights Reserved.</p>
     </footer>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var kakaoBtn = document.getElementById("kakao-link-btn");
+        if (kakaoBtn) {
+          kakaoBtn.addEventListener("click", function (e) {
+            var isMobile =
+              /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+              );
+            if (!isMobile) {
+              e.preventDefault();
+              alert("모바일에서만 가능합니다.");
+            }
+          });
+        }
+      });
+    </script>
   </body>
 </html>
