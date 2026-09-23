@@ -131,9 +131,14 @@
       }
       return current;
     }
+    function hydrate(img) {
+      if (img.dataset.srcset) { img.srcset = img.dataset.srcset; delete img.dataset.srcset; }
+      if (img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; }
+      img.loading = 'eager';
+    }
     function preload() {
       const img = slides[nextIndex()].querySelector('img');
-      img.loading = 'eager';
+      hydrate(img);
       if (img.decode) img.decode().catch(() => {});
     }
     function schedule() {
@@ -146,7 +151,7 @@
       if (pending || !visible || document.hidden) return;
       pending = true;
       const target = nextIndex(), img = slides[target].querySelector('img');
-      img.loading = 'eager';
+      hydrate(img);
       try {
         if (img.decode) await img.decode();
         if (visible && !document.hidden) {
@@ -164,7 +169,9 @@
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(entries => {
         visible = entries[0].isIntersecting;
-        if (visible) preload();
+        const first = slides[current].querySelector('img');
+        if (visible && first.complete && first.naturalWidth) preload();
+        else if (visible) first.addEventListener('load', preload, {once:true});
         schedule();
       }, {threshold: .1}).observe(gallery);
     } else { visible = true; preload(); schedule(); }
@@ -185,28 +192,41 @@
     });
   }
   const mobileNav = window.matchMedia('(max-width:760px)');
-  function refresh() {
+  let activeId = null;
+  function refreshLinks() {
     links.forEach(link => {
-      if (link.dataset.mobileAnchor) link.setAttribute('href', mobileNav.matches ? link.dataset.mobileAnchor : link.dataset.desktopHref);
+      if (!link.dataset.mobileAnchor) return;
+      const href = mobileNav.matches ? link.dataset.mobileAnchor : link.dataset.desktopHref;
+      if (link.getAttribute('href') !== href) link.setAttribute('href', href);
     });
-    if (!mobileNav.matches) { links.forEach(link => link.removeAttribute('aria-current')); links[0]?.setAttribute('aria-current', 'page'); return; }
-    const header = document.querySelector('.site-header').getBoundingClientRect().height;
+    activeId = null;
+    if (!mobileNav.matches) {
+      links.forEach(link => link.removeAttribute('aria-current'));
+      links[0]?.setAttribute('aria-current', 'page');
+    }
+  }
+  function refreshPosition() {
+    if (!mobileNav.matches) return;
+    // Finish geometry reads before changing any attributes that affect styling.
+    const headerHeight = document.querySelector('.site-header').getBoundingClientRect().height;
     let active = 'top';
     sectionIds.slice(1).forEach(id => {
       const section = document.getElementById(id);
-      if (section && section.getBoundingClientRect().top <= header + 50) active = id;
+      if (section && section.getBoundingClientRect().top <= headerHeight + 50) active = id;
     });
-    mark(active);
+    if (active !== activeId) { mark(active); activeId = active; }
   }
   let ticking = false;
-  document.addEventListener('scroll', () => {
-    if (ticking) return;
+  function queuePosition() {
+    if (ticking || !mobileNav.matches) return;
     ticking = true;
-    requestAnimationFrame(() => { refresh(); ticking = false; });
-  }, {passive:true});
-  mobileNav.addEventListener('change', refresh);
-  window.addEventListener('resize', refresh);
-  refresh();
+    requestAnimationFrame(() => { refreshPosition(); ticking = false; });
+  }
+  document.addEventListener('scroll', queuePosition, {passive:true});
+  mobileNav.addEventListener('change', () => { refreshLinks(); queuePosition(); });
+  window.addEventListener('resize', queuePosition);
+  refreshLinks();
+  queuePosition();
 })();
 
 // Restore the representative cases when a desktop filter switches to mobile.
