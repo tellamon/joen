@@ -357,3 +357,43 @@ button,input,textarea{font-family:inherit}a,button{touch-action:manipulation}a:f
  .case-consult .wide-call{margin-top:19px;width:100%;font-size:14px}
 }
 @media(hover:none){.project-card:hover{transform:none;box-shadow:none}}
+
+/* Full-screen photo browsing, with swipe and keyboard navigation. */
+.lightbox{height:100vh;height:100dvh;display:flex;flex-direction:column;gap:0;padding:0;background:rgba(12,22,19,.97);color:#fff;overscroll-behavior:contain}
+.lightbox[hidden]{display:none}
+.lightbox .lightbox-header{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:calc(14px + env(safe-area-inset-top)) 26px 12px;flex-shrink:0}
+.lightbox-header>span{font-size:15px;font-weight:550;color:#e1e9e2}
+.lightbox button{position:static;top:auto;right:auto;border:1px solid #ffffff45;color:#fff;background:#ffffff0d;border-radius:25px;min-height:46px;min-width:46px;padding:0 18px;display:inline-flex;align-items:center;justify-content:center;gap:9px;line-height:1;font-size:14px}
+.lightbox button:hover{background:#ffffff22}
+.lightbox button:focus-visible{outline:3px solid #b5d6be;outline-offset:4px}
+.lightbox button:disabled{opacity:.35;cursor:default}
+.lightbox-stage{position:relative;display:flex;align-items:center;justify-content:center;min-height:0;flex:1;width:100%;padding:6px 24px;touch-action:pan-y pinch-zoom}
+.lightbox .lightbox-image{display:block;width:100%;height:100%;max-width:1500px;max-height:100%;object-fit:contain;user-select:none;-webkit-user-select:none}
+.lightbox .lightbox-bottom{flex-shrink:0;text-align:center;padding:14px 20px calc(16px + env(safe-area-inset-bottom))}
+.lightbox-navigation{display:flex;align-items:center;justify-content:center;gap:22px}
+.lightbox-navigation button{width:48px;height:48px;padding:0;font-size:24px}
+.lightbox-count{min-width:70px;font-size:15px;font-variant-numeric:tabular-nums;letter-spacing:.04em;color:#e5eee6}
+.lightbox #lightbox-help{font-size:12px;color:#b3c3b7;line-height:1.6;margin:12px 0 0}
+.lightbox-touch-help{display:none}
+.lightbox-error{position:absolute;left:20px;right:20px;bottom:12px;background:#263a31e8;color:#fff;padding:14px;border-radius:10px;font-size:14px;text-align:center}
+.lightbox-error[hidden]{display:none}
+@media(pointer:coarse){.lightbox-touch-help{display:inline}.lightbox-keyboard-help{display:none}}
+@media(max-width:760px){
+ .lightbox .lightbox-header{padding:calc(11px + env(safe-area-inset-top)) 17px 9px}
+ .lightbox-stage{padding:4px 10px}
+ .lightbox .lightbox-bottom{padding-top:12px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+ .lightbox-touch-help{display:inline}.lightbox-keyboard-help{display:none}
+}
+@media(max-height:480px) and (orientation:landscape){
+ .lightbox .lightbox-header{padding-top:6px;padding-bottom:4px}
+ .lightbox .lightbox-bottom{padding-top:5px;padding-bottom:5px}
+ .lightbox #lightbox-help{display:none}
+ .lightbox-navigation button{height:44px;min-height:44px;width:44px}
+}
+
+/* Reassure visitors before asking them for installation details. */
+.guide-reassurance{padding:24px 26px;margin:-4px 0 26px;background:#edf4e8;border:1px solid #dce8d4;border-radius:15px}
+.guide-reassurance>strong{display:block;font-size:19px;font-weight:650;line-height:1.6;color:#285b50}
+.guide-reassurance>p{max-width:760px;font-size:15px;line-height:1.9;color:#52694c;margin:9px 0 7px}
+.guide-reassurance>a{display:inline-flex;align-items:center;gap:20px;min-height:44px;font-size:14px;font-weight:600;color:#285b50}
+@media(max-width:760px){.guide-reassurance{padding:20px;margin-bottom:22px;border-radius:13px}.guide-reassurance>strong{font-size:18px}.guide-reassurance>p{font-size:14px}}

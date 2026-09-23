@@ -1,9 +1,106 @@
+/* Browse an entire case gallery without closing the enlarged photo. */
 (() => {
- const toggle=document.querySelector('.menu-toggle'),menu=document.querySelector('.full-menu');
- if(toggle&&menu){toggle.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')!=='true';toggle.setAttribute('aria-expanded',String(open));menu.hidden=!open;});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){menu.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.focus();}});}
- const box=document.querySelector('.lightbox');if(!box)return;const picture=box.querySelector('img'),close=box.querySelector('button');let previous=null;
- function hide(){box.hidden=true;document.body.style.overflow='';if(previous)previous.focus();}
- document.querySelectorAll('.content .wp-block-image img').forEach(img=>{if(img.closest('a'))return;img.tabIndex=0;img.setAttribute('role','button');img.setAttribute('aria-label',img.alt?img.alt+' 크게 보기':'시공사진 크게 보기');const show=()=>{previous=img;picture.src=img.currentSrc||img.src;picture.alt=img.alt||'시공사진';box.hidden=false;document.body.style.overflow='hidden';close.focus();};img.addEventListener('click',show);img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}});});close.addEventListener('click',hide);box.addEventListener('click',e=>{if(e.target===box)hide();});document.addEventListener('keydown',e=>{if(!box.hidden&&e.key==='Escape')hide();if(!box.hidden&&e.key==='Tab'){e.preventDefault();close.focus();}});
+  const box = document.querySelector('.lightbox');
+  const photos = Array.from(document.querySelectorAll('.content .wp-block-image img')).filter(img => !img.closest('a'));
+  if (!box || !photos.length) return;
+  const picture = box.querySelector('.lightbox-image');
+  const stage = box.querySelector('.lightbox-stage');
+  const close = box.querySelector('[data-lightbox-close]');
+  const prev = box.querySelector('[data-lightbox-prev]');
+  const next = box.querySelector('[data-lightbox-next]');
+  const counter = box.querySelector('.lightbox-count');
+  const status = box.querySelector('.lightbox-status');
+  const error = box.querySelector('.lightbox-error');
+  let current = 0, opener = null, oldOverflow = '', background = [];
+  let gesture = null, multipleTouches = false;
+  const warmed = new Set();
+  const source = img => img.currentSrc || img.src;
+  function preload(index) {
+    const src = source(photos[(index + photos.length) % photos.length]);
+    if (!warmed.has(src)) { warmed.add(src); const img = new Image(); img.src = src; }
+  }
+  function show(index) {
+    current = (index + photos.length) % photos.length;
+    const selected = photos[current];
+    picture.alt = selected.alt || '조은공조시스템 시공사진';
+    error.hidden = true;
+    stage.setAttribute('aria-busy', 'true');
+    picture.src = source(selected);
+    if (picture.complete && picture.naturalWidth > 0) stage.setAttribute('aria-busy', 'false');
+    counter.textContent = `${current + 1} / ${photos.length}`;
+    status.textContent = `${photos.length}장 중 ${current + 1}번째 사진. ${picture.alt}`;
+    prev.disabled = next.disabled = photos.length < 2;
+    preload(current - 1); preload(current + 1);
+  }
+  function open(index, trigger) {
+    opener = trigger;
+    oldOverflow = document.body.style.overflow;
+    background = Array.from(document.body.children).filter(el => el !== box && !['SCRIPT','STYLE'].includes(el.tagName)).map(el => [el, el.inert]);
+    background.forEach(([el]) => { el.inert = true; });
+    box.hidden = false;
+    document.body.style.overflow = 'hidden';
+    gesture = null; multipleTouches = false;
+    show(index);
+    close.focus({preventScroll:true});
+  }
+  function hide() {
+    if (box.hidden) return;
+    box.hidden = true;
+    gesture = null; multipleTouches = false;
+    document.body.style.overflow = oldOverflow;
+    background.forEach(([el, inert]) => { el.inert = inert; });
+    background = [];
+    opener?.focus({preventScroll:true});
+  }
+  photos.forEach((img, index) => {
+    img.tabIndex = 0;
+    img.setAttribute('role', 'button');
+    img.setAttribute('aria-haspopup', 'dialog');
+    img.setAttribute('aria-label', (img.alt || '시공사진') + ' 크게 보기');
+    img.addEventListener('click', () => open(index, img));
+    img.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(index, img); }
+    });
+  });
+  close.addEventListener('click', hide);
+  prev.addEventListener('click', () => show(current - 1));
+  next.addEventListener('click', () => show(current + 1));
+  box.addEventListener('click', e => { if (e.target === box) hide(); });
+  picture.addEventListener('load', () => stage.setAttribute('aria-busy', 'false'));
+  picture.addEventListener('error', () => { stage.setAttribute('aria-busy', 'false'); error.hidden = false; });
+  document.addEventListener('keydown', e => {
+    if (box.hidden) return;
+    if (e.key === 'Escape') { e.preventDefault(); hide(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); show(current - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); show(current + 1); }
+    else if (e.key === 'Tab') {
+      const buttons = [close, prev, next].filter(button => !button.disabled);
+      const first = buttons[0], last = buttons[buttons.length - 1];
+      if (e.shiftKey && (document.activeElement === first || !box.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && (document.activeElement === last || !box.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+    }
+  });
+  // Ignore vertical scrolling, short taps and two-finger/pinch gestures.
+  stage.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1 || (window.visualViewport?.scale || 1) > 1.05) {
+      multipleTouches = true; gesture = null; return;
+    }
+    if (multipleTouches) return;
+    const point = e.touches[0];
+    gesture = {x:point.clientX, y:point.clientY, id:point.identifier};
+  }, {passive:true});
+  stage.addEventListener('touchend', e => {
+    if (e.touches.length) return;
+    if (!multipleTouches && gesture && (window.visualViewport?.scale || 1) <= 1.05) {
+      const point = Array.from(e.changedTouches).find(t => t.identifier === gesture.id);
+      if (point) {
+        const dx = point.clientX - gesture.x, dy = point.clientY - gesture.y;
+        if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.3) show(current + (dx < 0 ? 1 : -1));
+      }
+    }
+    gesture = null; multipleTouches = false;
+  }, {passive:true});
+  stage.addEventListener('touchcancel', () => { gesture = null; multipleTouches = false; }, {passive:true});
 })();
 
 (() => {
