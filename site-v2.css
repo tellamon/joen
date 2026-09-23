@@ -397,3 +397,56 @@ button,input,textarea{font-family:inherit}a,button{touch-action:manipulation}a:f
 .guide-reassurance>p{max-width:760px;font-size:15px;line-height:1.9;color:#52694c;margin:9px 0 7px}
 .guide-reassurance>a{display:inline-flex;align-items:center;gap:20px;min-height:44px;font-size:14px;font-weight:600;color:#285b50}
 @media(max-width:760px){.guide-reassurance{padding:20px;margin-bottom:22px;border-radius:13px}.guide-reassurance>strong{font-size:18px}.guide-reassurance>p{font-size:14px}}
+
+/* Mobile typography: shared gutters, natural wrapping, and single-purpose cards. */
+@media(max-width:760px){
+ .wrap,.content{width:calc(100% - 36px)}
+ main :is(h1,h2,h3,p,li,dd,summary){word-break:keep-all;overflow-wrap:anywhere}
+ main :is(h1,h2,h3){text-align:left;letter-spacing:-.035em;text-wrap:pretty}
+ main :is(p,dd){text-align:left;text-wrap:pretty}
+ .home-page .category-links{display:none}
+ .home-page .section-head,.home-page .mobile-summary{text-align:left}
+ .home-page .section-head h2,.home-page .mobile-summary h2{font-size:clamp(23px,6vw,26px);line-height:1.5}
+ .home-page .mobile-summary .summary-copy{font-size:15px;line-height:1.85;margin:16px 0 0}
+ .home-page .project-text h3{text-align:center;white-space:nowrap}
+ .home-page .summary-more{display:flex;width:100%;gap:12px;line-height:1.65;margin-top:16px;padding:12px 0}
+ .summary-more>span{flex-shrink:0;margin-left:auto}
+ .summary-steps li{display:flex;flex-direction:column;align-items:flex-start}
+ .summary-steps strong{font-size:15px;line-height:1.55}
+ .summary-steps p{font-size:12px;line-height:1.65}
+ .about-intro-lead,.about-intro-desc,.about-story-copy>p,.guide-intro-copy,.contact-intro{line-height:1.85}
+ .about-intro-lead br,.about-intro-desc br,.contact-intro br{display:none}
+ .about-story-copy>p:first-child{margin-top:0}
+ .about-story-copy>p+p{margin-top:16px}
+ .guide-section-heading{display:grid;grid-template-columns:29px minmax(0,1fr);align-items:start}
+ .guide-section-heading .eyebrow{font-size:12px;letter-spacing:.015em;line-height:1.65}
+ .guide-steps li{display:grid;grid-template-rows:auto minmax(56px,auto) 1fr;align-content:start}
+ .guide-steps h3{font-size:17px;line-height:1.6;margin:8px 0 10px}
+ .guide-steps p{margin:0;font-size:14px;line-height:1.85}
+ .guide-checklist dt{display:flex;align-items:baseline;gap:9px}
+ .guide-checklist dt span{flex-shrink:0;margin:0;min-width:14px}
+ .guide-faq details{padding-inline:12px}
+ .guide-faq details[open]{padding-inline:12px}
+ .guide-faq summary{padding-right:28px}
+ .guide-faq summary:after{top:17px}
+ .guide-intro-bottom>a{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+ .guide-intro-bottom strong{margin-left:0}
+ .contact-channel{grid-template-columns:42px minmax(0,1fr);align-items:start}
+ .contact-channel h3{grid-column:2;grid-row:1;line-height:1.5}
+ .contact-channel p{grid-column:2;grid-row:2;line-height:1.75;min-width:0}
+ .contact-channel-action{grid-column:1/-1;grid-row:3;gap:12px}
+ .contact-email-address{overflow-wrap:anywhere}
+ .contact-prep-list li{align-items:flex-start}
+ .contact-prep-list li>span{flex-shrink:0}
+ .contact-prep-list h3{line-height:1.6;margin-top:0}
+ .case-page .source-section h2{font-size:21px;line-height:1.55;text-wrap:pretty}
+ .footer-details span{overflow-wrap:anywhere}
+}
+@media(max-width:360px){
+ .home-page .hero-actions{gap:8px;flex-wrap:wrap}
+ .home-page .summary-steps li{padding-inline:8px}
+ .summary-steps strong{font-size:14px}
+ .summary-steps p{font-size:12px}
+ .guide-steps{gap:22px 14px}
+ .contact-phone-card>strong{font-size:clamp(25px,8vw,30px)}
+}
