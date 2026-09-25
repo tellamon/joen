@@ -103,17 +103,43 @@
   stage.addEventListener('touchcancel', () => { gesture = null; multipleTouches = false; }, {passive:true});
 })();
 
+/* Shareable case categories for advertising links, reloads and browser history. */
 (() => {
- const buttons=Array.from(document.querySelectorAll('[data-filter]'));
- const cards=Array.from(document.querySelectorAll('.project-card[data-category]'));
- if(!buttons.length)return;
- buttons.forEach(button=>button.addEventListener('click',()=>{
-   const filter=button.dataset.filter;
-   buttons.forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
-   cards.forEach(card=>card.hidden=filter!=='all'&&card.dataset.category!==filter);
-   document.getElementById('project-status').textContent=button.textContent.replace(/\d/g,'').trim()+' 시공사진 '+cards.filter(c=>!c.hidden).length+'개';
+ const buttons = Array.from(document.querySelectorAll('[data-filter]'));
+ const cards = Array.from(document.querySelectorAll('.project-card[data-category]'));
+ if (!buttons.length) return;
+ const valid = new Set(buttons.map(button => button.dataset.filter));
+ const originalSizes = new Map(cards.map(card => [card, card.querySelector('img').sizes]));
+ function selectedFromUrl() {
+   const value = new URLSearchParams(location.search).get('category');
+   return valid.has(value) ? value : 'all';
+ }
+ function apply(filter) {
+   const selected = valid.has(filter) ? filter : 'all';
+   document.body.classList.toggle('has-project-filter', selected !== 'all');
+   buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.filter === selected)));
+   cards.forEach(card => {
+     card.hidden = selected !== 'all' && card.dataset.category !== selected;
+     const img = card.querySelector('img');
+     img.sizes = selected === 'all' ? originalSizes.get(card) : '(max-width:760px) calc(100vw - 36px), (max-width:1000px) calc((100vw - 98px)/2), 375px';
+   });
+   const button = buttons.find(button => button.dataset.filter === selected);
+   document.getElementById('project-status').textContent = button.textContent.replace(/\d/g, '').trim() + ' 시공사진 ' + cards.filter(card => !card.hidden).length + '개';
+ }
+ buttons.forEach(button => button.addEventListener('click', () => {
+   const selected = button.dataset.filter;
+   apply(selected);
+   // Preserve advertising attribution parameters when the visitor changes category.
+   try {
+     const url = new URL(location.href);
+     if (selected === 'all') url.searchParams.delete('category');
+     else url.searchParams.set('category', selected);
+     url.hash = 'projects';
+     if (url.href !== location.href) history.pushState(null, '', url);
+   } catch (_) { /* Local srcdoc previews cannot always update browser history. */ }
  }));
- document.querySelectorAll('.full-menu a[href^="#"]').forEach(link=>link.addEventListener('click',()=>{document.querySelector('.full-menu').hidden=true;document.querySelector('.menu-toggle').setAttribute('aria-expanded','false');}));
+ window.addEventListener('popstate', () => apply(selectedFromUrl()));
+ apply(selectedFromUrl());
 })();
 
 /* Automatic photo sequence: no playback buttons or numeric navigation. */
@@ -229,12 +255,3 @@
   queuePosition();
 })();
 
-// Restore the representative cases when a desktop filter switches to mobile.
-(() => {
- const mobile = window.matchMedia('(max-width:760px)');
- const all = document.querySelector('.home-page [data-filter="all"]');
- if (!all) return;
- function resetMobileCases() { if (mobile.matches) all.click(); }
- mobile.addEventListener('change', resetMobileCases);
- resetMobileCases();
-})();
